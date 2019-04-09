@@ -30,6 +30,7 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Invalid name or password.");
         }
+        System.out.println(user.getRole());
         return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassword(),
                 Arrays.asList(new SimpleGrantedAuthority("ROLE_" + user.getRole())));
     }
