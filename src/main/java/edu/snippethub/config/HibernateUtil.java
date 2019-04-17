@@ -12,6 +12,7 @@ public class HibernateUtil {
         try {
             Configuration configuration = new Configuration().configure();
             configuration.addAnnotatedClass(Class.forName("edu.snippethub.entity.User"));
+            configuration.addAnnotatedClass(Class.forName("edu.snippethub.entity.Snippet"));
 //            configuration.addAnnotatedClass(Class.forName("edu.snippethub.entity.Role"));
             StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
             sessionFactory = configuration.buildSessionFactory(builder.build());

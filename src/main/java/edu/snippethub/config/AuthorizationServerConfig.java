@@ -2,9 +2,12 @@ package edu.snippethub.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -41,7 +44,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     private final AccessTokenConverter accessTokenConverter;
 
-    @Autowired
+    @Resource(name = "userService")
     private UserDetailsService userDetailsService;
 
     @Autowired
@@ -68,12 +71,30 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        //F-
         endpoints.tokenStore(tokenStore)
                 .userDetailsService(userDetailsService)
                 .authenticationManager(authenticationManager)
                 .accessTokenConverter(accessTokenConverter)
-        ;
-        //F+
+                .exceptionTranslator(e -> {
+                    // change error code to 401 if bad credentials
+                    if(e instanceof InvalidGrantException) {
+                        InvalidGrantException invalidGrantException = (InvalidGrantException) e;
+                        int errorCode = 401;
+                        return ResponseEntity
+                                .status(errorCode)
+                                .body(new InvalidGrantException(invalidGrantException.getMessage()));
+                    }
+                    else if (e instanceof OAuth2Exception) {
+                        OAuth2Exception oAuth2Exception = (OAuth2Exception) e;
+
+                        return ResponseEntity
+                                .status(oAuth2Exception.getHttpErrorCode())
+                                .body(OAuth2Exception.create(oAuth2Exception.getOAuth2ErrorCode(),
+                                        oAuth2Exception.getMessage()));
+                    }
+                    else {
+                        throw e;
+                    }
+                });
     }
 }
