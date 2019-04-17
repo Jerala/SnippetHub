@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-@Service
+@Service(value = "userService")
 public class UserService implements UserDetailsService {
 
     @Autowired
@@ -40,6 +40,14 @@ public class UserService implements UserDetailsService {
             userDAO.addUser(user);
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public User getUserByName(String userName) {
+        try {
+            return userDAO.getUserByName(userName);
+        } catch (NullPointerException | SQLException e) {
+            return null;
         }
 
     }

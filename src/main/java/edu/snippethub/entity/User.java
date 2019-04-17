@@ -1,5 +1,6 @@
 package edu.snippethub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import javax.persistence.*;
 @Table(name = "Users")
 public class User {
 
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
@@ -22,6 +24,7 @@ public class User {
     @NonNull
     private String userName;
 
+    @JsonIgnore
     @Column(name = "password", length = 128, nullable = false)
     @NonNull
     private String password;
