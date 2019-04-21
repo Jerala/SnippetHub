@@ -2,11 +2,14 @@ package edu.snippethub.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
-@ToString(exclude = "password")
+@ToString(exclude = {"likes", "snippets", "password"})
 @EqualsAndHashCode
 @NoArgsConstructor
 @RequiredArgsConstructor
@@ -20,7 +23,7 @@ public class User {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "user_name", length = 36, nullable = false)
+    @Column(name = "user_name", length = 36, nullable = false, unique = true)
     @NonNull
     private String userName;
 
@@ -33,11 +36,21 @@ public class User {
     @NonNull
     private boolean enabled;
 
-    @Column(name = "email", length = 128, nullable = false)
+    @Column(name = "email", length = 128, nullable = false, unique = true)
     @NonNull
     private String email;
 
     @Column(name = "role", length = 10, nullable = false)
     @NonNull
     private String role;
+
+    @OneToMany(mappedBy = "user")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private List<Snippet> snippets;
+
+    @OneToMany(mappedBy = "user")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private List<Like> likes;
 }

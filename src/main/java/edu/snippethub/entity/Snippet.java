@@ -1,13 +1,15 @@
 package edu.snippethub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
 @RequiredArgsConstructor
@@ -15,6 +17,7 @@ import java.util.Date;
 @Document(indexName = "snippethub", type = "snippet")
 @Entity
 @Table(name = "Snippet")
+@ToString(exclude = {"likes","user"})
 public class Snippet {
 
     @Column(name = "snippet_id", nullable = false)
@@ -27,14 +30,10 @@ public class Snippet {
     @NonNull
     private Long plId;
 
-    @Field(type = FieldType.keyword)
+    @Field(type = FieldType.text)
     @Column(name = "snippet_name", length = 100, nullable = false)
     @NonNull
     private String snippetName;
-
-    @Column(name = "user_id", length = 15, nullable = false)
-    @NonNull
-    private Long userId;
 
     @Column(name = "upload_date", nullable = false)
     @NonNull
@@ -48,11 +47,28 @@ public class Snippet {
     @NonNull
     private Integer approved;
 
-    @Field(type = FieldType.keyword)
+    @MultiField(
+            mainField = @Field(type = FieldType.text, fielddata = true),
+            otherFields = {
+                    @InnerField(suffix = "engAn", indexAnalyzer = "english", type = FieldType.text)
+            }
+    )
     @Column(name = "tags", nullable = true)
     @NonNull
     private String tags;
 
+    @OneToMany(mappedBy = "snippet")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private List<Like> likes;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Transient
     private Float score;
+
+    @Transient
+    private String snippetText;
 }
