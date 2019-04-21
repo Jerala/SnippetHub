@@ -2,6 +2,7 @@ package edu.snippethub.init;
 
 import edu.snippethub.entity.User;
 import edu.snippethub.service.UserService;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -18,12 +19,17 @@ public class InitDataBases implements ApplicationRunner {
     private UserService userService;
 
     public void run(ApplicationArguments args) {
-        addUsersInDataBase();
+        try {
+            addUsersInDataBase();
+        } catch (PSQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void addUsersInDataBase() {
+    private void addUsersInDataBase() throws PSQLException {
         List<User> users = userUtil.createUsers();
-        users.forEach(user -> userService.save(user));
+        for(User user: users)
+            userService.save(user);
     }
 
 }
